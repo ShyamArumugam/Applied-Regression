@@ -1,0 +1,121 @@
+-----------------------------------
+Title: "Applied Regression H.1"
+Output: html_document
+-----------------------------------
+
+
+
+
+```{r}
+#read Dataset
+
+library(readr)
+LAozone <- read_csv("LAozone.csv")
+LAozone
+```
+```{r}
+# a)
+
+# Separate the predictor variables
+
+LAozone[,2:10]
+str(LAozone[,2:10])
+
+# Summarize the predictor variables
+summary(LAozone[,2:10])
+```
+```{r}
+# b)
+
+library(tidyr)
+
+# Convert predictor variables of LAozone dataset from wide to long and storing it in LAozone_long dataset 
+
+LAozone_long <- gather(LAozone[,2:11], variable, value, vh:doy, factor_key=TRUE)
+LAozone_long
+```
+```{r}
+# c)
+
+library(ggplot2)
+
+# Boxplot using dataset in long format
+
+ggplot(data = LAozone_long, mapping = aes(x = id, y = value, fill = variable)) + geom_boxplot() + ggtitle("Box plot")
+```
+```{r}
+# Histogram using dataset in long format 
+
+ggplot(LAozone_long, aes(x=value,fill=variable)) + geom_histogram(binwidth = 100) + ggtitle("Combined Histogram")
+
+
+
+ggplot(data = LAozone_long) +
+  geom_histogram(aes(x=value,fill=variable), bins=10)+ facet_wrap(~variable) + ggtitle("Separate Histogram")
+     
+
+```
+```{r}
+# d)
+
+# Scaling of wide dataset without id column
+LAozone_wide_scale <- scale(LAozone[,1:10], center = TRUE, scale = TRUE)
+
+# Converting new scaled matrix to Dataframe
+LAozone_wide_scale <- as.data.frame(LAozone_wide_scale)
+
+# Display dataset
+LAozone_wide_scale[1:10,]
+
+# Adding id column to the new scaled wide dataset
+LAozone_wide_scale["id"] <- NA
+
+# Assigning the values of id to new scaled wide dataset
+LAozone_wide_scale$id <- LAozone$id
+
+# Display dataset
+LAozone_wide_scale[1:10,]
+
+# Converting scaled wide dataset to long
+LAozone_long_scale <- gather(LAozone_wide_scale[,2:11], variable, value, vh:doy, factor_key=TRUE)
+
+# Box plot after scaling
+ggplot(data = LAozone_long_scale, mapping = aes(x = id, y = value, fill = variable)) + geom_boxplot() + ggtitle("Box plot after scaling") + labs(caption="We can infer that Predictor variable ibh (Inversion Base Height) is more skewed")
+```
+
+```{r}
+# e)
+
+# Converting wide scaled Dataframe with Response and predictor variables to long scaled
+LAozone_long_scale1<- gather(LAozone_wide_scale[,1:10], variable, value, vh:doy, factor_key=TRUE)
+
+# Display dataset
+LAozone_long_scale1[1:10,]
+
+# Scatterplot after scaling
+ggplot(LAozone_long_scale1, aes(x=value,y = ozone, colour = variable)) +
+  geom_point()+ facet_wrap(~variable) + ggtitle("Scatterplot of Scaled Dataset") + labs(caption="Plots of vh,temp,ibt show weak positive correlation \n Remaining plots show weak or no correlation")
+
+
+
+```
+
+```{r}
+# f)
+
+# Add new column of season to LAozone
+LAozone["season"] <- NA
+
+# Logic to update season depending on day of year
+LAozone$season <- ifelse(LAozone$doy > 90 & LAozone$doy < 274 , "April to September", "October to March")
+
+# Display dataset
+LAozone[1:10,]
+
+# Scatterplot of dpg vs ozone with season
+ggplot(LAozone, aes(x=dpg,y = ozone, shape = season, color =  season)) +
+  geom_point() +  ggtitle("Scatterplot of dpg vs ozone with season") + labs(caption = "This scatterplot is similar to that of one in (e) \n except that season attributes are overlayed on the same scatterplot")
+
+
+```
+
